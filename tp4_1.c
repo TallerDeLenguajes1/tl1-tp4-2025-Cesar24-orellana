@@ -22,12 +22,13 @@ Nodo *CrearListaVacia();
 Nodo *CargarTarea(char descripcion[], int time, int id);
 int validarTiempo();
 void InsertarNodo(Nodo **star, Nodo *nodo);
-Nodo *BuscarTarea(Nodo *star, int idBusacar);
-Nodo *QuitarNodo(Nodo *star, int dato);
+Nodo *BuscarTarea(Nodo **star, int idBusacar);
+Nodo *QuitarNodo(Nodo **star, int dato);
 void consultarTarea(Nodo *pendiente, Nodo *Realizada);
 void MostrarDatos(Nodo *nodo);
-Nodo *BuscarTarea2(Nodo **star, char description[]);
-Nodo *BuscarTarea3(Nodo **star, int id);
+Nodo *BuscarTareaDescripcion(Nodo **star, char description[]);
+Nodo *BuscarTareaId(Nodo **star, int id);
+void EliminarNodo(Nodo *Eliminar);
 
 int main()
 {
@@ -55,7 +56,7 @@ int main()
     } while (continuar != 0);
 
     MostrarDatos(tareasPendientes); // Mostrar la lista de tareasPendientes
-
+    Nodo *aux = CrearListaVacia();
     continuar = 1;
     do
     {
@@ -63,9 +64,11 @@ int main()
         int realizada;
         printf("Ingrese el ID de la tarea realizada: ");
         scanf("%d", &realizada);
-        Nodo *aux = BuscarTarea(tareasPendientes, realizada);       // Buscar la tarea ya realizada
+        aux = BuscarTarea(tareasPendientes, realizada);       // Buscar la tarea ya realizada
         InsertarNodo(&tareasRealizadas, aux);                       // Agregar la tarea realizada a la lista tareaRealizadas
-        tareasPendientes = QuitarNodo(tareasPendientes, realizada); // Quitar la tarea realizada de la lista tareasPendientes
+        Nodo *NodoQuitar = QuitarNodo(&tareasPendientes, realizada); // Quitar la tarea realizada de la lista tareasPendientes
+        EliminarNodo(NodoQuitar);
+
         printf("\nDesea elegir otra tarea como concluida?\n 1. Si  0. No \n");
         scanf("%d", &continuar);
     } while (continuar != 0);
@@ -109,7 +112,7 @@ void InsertarNodo(Nodo **star, Nodo *nodo) // Insertar nodos a la lista
     *star = nodo;
 }
 
-Nodo *BuscarTarea(Nodo *star, int idBusacar)
+Nodo *BuscarTarea(Nodo **star, int idBusacar)
 {
     Nodo *Aux = star;
     while (Aux && Aux->T.TareaId != idBusacar)
@@ -119,10 +122,10 @@ Nodo *BuscarTarea(Nodo *star, int idBusacar)
     return Aux;
 }
 
-Nodo *QuitarNodo(Nodo *star, int dato)
+Nodo *QuitarNodo(Nodo **star, int dato)
 {
     Nodo **anterior = star;
-    while (anterior != NULL && (*anterior)->T.TareaId != dato)
+    while (*anterior != NULL && (*anterior)->T.TareaId != dato)
     {
         anterior = &(*anterior)->siguiente;
     }
@@ -144,6 +147,7 @@ void MostrarDatos(Nodo *nodo)
     Nodo *data = nodo;
     while (data != NULL)
     {
+        printf("Sus datos son\n");
         printf("Id de tarea: %d\n", data->T.TareaId);
         printf("Tarea: %s\n", data->T.Descripcion);
         printf("Duracion: %d\n", data->T.Duracion);
@@ -160,10 +164,10 @@ void consultarTarea(Nodo *pendiente, Nodo *Realizada){
     scanf("%d", &consulta);
     if (consulta == 0)
     {
-        tarea = BuscarTarea3(pendiente, id);
+        tarea = BuscarTareaId(pendiente, id);
         if (tarea == NULL)
         {
-            tarea = BuscarTarea3(Realizada, id);
+            tarea = BuscarTareaId(Realizada, id);
             printf("Su tarea ya fue realizada\n");
         } else
         {
@@ -172,10 +176,10 @@ void consultarTarea(Nodo *pendiente, Nodo *Realizada){
         
     } else
     {
-        tarea = BuscarTarea2(pendiente, description);
+        tarea = BuscarTareaDescripcion(&pendiente, description);
         if (tarea == NULL)
         {
-            tarea = BuscarTarea2(Realizada, description);
+            tarea = BuscarTareaDescripcion(Realizada, description);
             printf("Su tarea ya fue realizada\n");
         } else
         {
@@ -187,8 +191,8 @@ void consultarTarea(Nodo *pendiente, Nodo *Realizada){
     
 }
 
-Nodo *BuscarTarea2(Nodo **star, char description[]){
-    Nodo *Aux = star;
+Nodo *BuscarTareaDescripcion(Nodo **star, char description[]){
+    Nodo *Aux = *star;
     while (Aux && Aux->T.Descripcion != description)
     {
         Aux = Aux->siguiente;
@@ -205,7 +209,7 @@ Nodo *BuscarTarea2(Nodo **star, char description[]){
     
 }
 
-Nodo *BuscarTarea3(Nodo **star, int id){
+Nodo *BuscarTareaId(Nodo **star, int id){
     Nodo *Aux = star;
     while (Aux && Aux->T.TareaId != id)
     {
@@ -220,4 +224,9 @@ Nodo *BuscarTarea3(Nodo **star, int id){
         return NULL;
         
     }
+}
+
+void EliminarNodo(Nodo *Eliminar){
+    free(Eliminar->T.Descripcion);
+    free(Eliminar);
 }
