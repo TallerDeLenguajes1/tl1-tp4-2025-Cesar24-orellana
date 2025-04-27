@@ -21,24 +21,25 @@ typedef struct Nodo
 Nodo *CrearListaVacia();
 Nodo *CargarTarea(char descripcion[], int time, int id);
 int validarTiempo();
-void InsertarNodo(Nodo **star, Nodo *nodo);
-Nodo *BuscarTarea(Nodo **star, int idBusacar);
-Nodo *QuitarNodo(Nodo **star, int dato);
+void InsertarNodo(Nodo **start, Nodo *nodo);
+Nodo *BuscarTarea(Nodo **start, int idBusacar);
+Nodo *QuitarNodo(Nodo **start, int dato);
 void consultarTarea(Nodo *pendiente, Nodo *Realizada);
 void MostrarDatos(Nodo *nodo);
-Nodo *BuscarTareaDescripcion(Nodo **star, char description[]);
-Nodo *BuscarTareaId(Nodo **star, int id);
+Nodo *BuscarTareaDescripcion(Nodo **start, char description[]);
+Nodo *BuscarTareaId(Nodo **start, int id);
 void EliminarNodo(Nodo *Eliminar);
+void LiberarLista(Nodo **lista);
 
 int main()
 {
     char descripcion[30];
     int time, id = 1000;
     int continuar = 1;
-    Nodo *tareasRealizadas, *tareasPendientes, *star;
+    Nodo *tareasRealizadas, *tareasPendientes, *start;
     tareasRealizadas = CrearListaVacia();
     tareasPendientes = CrearListaVacia();
-    star = CrearListaVacia(); // Creo un nodo vasio
+    start = CrearListaVacia(); // Creo un nodo vasio
     do                        // Pedir datos e iterar hasta que ya no sea necesario
     {
         printf("Ingrese Los siguientes Datos:\n"); // Pido datos de entrada
@@ -47,8 +48,8 @@ int main()
         gets(descripcion);
         time = validarTiempo();                 // Validar tiempo entre 10 a 100
         
-        star = CargarTarea(descripcion, time, id); // Cargo los datos a un nodo vasio
-        InsertarNodo(&tareasPendientes, star);     // Inserto la nueva tarea a la lista
+        start = CargarTarea(descripcion, time, id); // Cargo los datos a un nodo vasio
+        InsertarNodo(&tareasPendientes, start);     // Inserto la nueva tarea a la lista
 
         printf("Desea ingresar una nueva tarea?\n 1. Si  0. No \n");
         scanf("%d", &continuar);
@@ -65,7 +66,8 @@ int main()
         printf("Ingrese el ID de la tarea realizada: ");
         scanf("%d", &realizada);
         aux = BuscarTarea(&tareasPendientes, realizada);       // Buscar la tarea ya realizada
-        InsertarNodo(&tareasRealizadas, aux);                       // Agregar la tarea realizada a la lista tareaRealizadas
+        start = CargarTarea(aux->T.Descripcion, aux->T.Duracion, aux->T.TareaId);
+        InsertarNodo(&tareasRealizadas, start);                       // Agregar la tarea realizada a la lista tareaRealizadas
         Nodo *NodoQuitar = QuitarNodo(&tareasPendientes, realizada); // Quitar la tarea realizada de la lista tareasPendientes
         EliminarNodo(NodoQuitar);
 
@@ -76,8 +78,12 @@ int main()
     MostrarDatos(tareasRealizadas); // Mostrar la lista de tareasRealizas
 
     consultarTarea(tareasPendientes, tareasRealizadas);
+
+    LiberarLista(&tareasPendientes);
+    LiberarLista(&tareasRealizadas);
     return 0;
 }
+
 
 Nodo *CrearListaVacia() // Crear Lista vacia
 {
@@ -107,15 +113,15 @@ int validarTiempo(){
     return tiempo;
 }
 
-void InsertarNodo(Nodo **star, Nodo *nodo) // Insertar nodos a la lista
+void InsertarNodo(Nodo **start, Nodo *nodo) // Insertar nodos a la lista
 {
-    nodo->siguiente = *star;
-    *star = nodo;
+    nodo->siguiente = *start;
+    *start = nodo;
 }
 
-Nodo *BuscarTarea(Nodo **star, int idBusacar)
+Nodo *BuscarTarea(Nodo **start, int idBusacar)
 {
-    Nodo *Aux = *star;
+    Nodo *Aux = *start;
     while (Aux && Aux->T.TareaId != idBusacar)
     {
         Aux = Aux->siguiente;
@@ -123,9 +129,9 @@ Nodo *BuscarTarea(Nodo **star, int idBusacar)
     return Aux;
 }
 
-Nodo *QuitarNodo(Nodo **star, int dato)
+Nodo *QuitarNodo(Nodo **start, int dato)
 {
-    Nodo **anterior = star;
+    Nodo **anterior = start;
     while (*anterior != NULL && (*anterior)->T.TareaId != dato)
     {
         anterior = &(*anterior)->siguiente;
@@ -142,11 +148,9 @@ Nodo *QuitarNodo(Nodo **star, int dato)
         return NULL;
     }
 }
-
-void MostrarDatos(Nodo *nodo)
-{
-    Nodo *data = nodo;
+void MostrarDatos(Nodo *nodo){
     printf("Sus datos son\n");
+    Nodo *data = nodo;
     while (data != NULL)
     {
         printf("Id de tarea: %d\n", data->T.TareaId);
@@ -197,9 +201,9 @@ void consultarTarea(Nodo *Pendiente, Nodo *Realizada){
     
 }
 
-Nodo *BuscarTareaDescripcion(Nodo **star, char description[]){
-    Nodo *Aux = *star;
-    while (Aux && Aux->T.Descripcion != *description)
+Nodo *BuscarTareaDescripcion(Nodo **start, char description[]){
+    Nodo *Aux = *start;
+    while (Aux && Aux->T.Descripcion != description)
     {
         Aux = Aux->siguiente;
     }
@@ -215,8 +219,8 @@ Nodo *BuscarTareaDescripcion(Nodo **star, char description[]){
     
 }
 
-Nodo *BuscarTareaId(Nodo **star, int id){
-    Nodo *Aux = *star;
+Nodo *BuscarTareaId(Nodo **start, int id){
+    Nodo *Aux = *start;
     while (Aux && Aux->T.TareaId != id)
     {
         Aux = Aux->siguiente;
@@ -235,4 +239,18 @@ Nodo *BuscarTareaId(Nodo **star, int id){
 void EliminarNodo(Nodo *Eliminar){
     free(Eliminar->T.Descripcion);
     free(Eliminar);
+}
+
+void LiberarLista(Nodo **lista){
+    Nodo *actual = *lista;
+    Nodo *aux;
+    while (actual != NULL)
+    {
+        aux = actual;
+        actual= actual->siguiente;
+
+        free(aux->T.Descripcion);
+        free(aux);
+    }
+    *lista = NULL;
 }
